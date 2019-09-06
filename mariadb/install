@@ -1,0 +1,5 @@
+#!/bin/bash
+
+apt install software-properties-common -y
+
+apt-key adv --recv-keys --keyserver hkp://keyserver.

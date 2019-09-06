@@ -1,0 +1,21 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+libjpegSrc='jpeg-9c'
+libjpegPkg='jpegsrc.v9c.tar.gz'
+libjpegUrl='http://www.ijg.org/files/'$libjpegPkg
+libjpegTgt=$workspace'/libjpeg'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $libjpegPkg ] || wget $libjpegUrl
+#[ -d $libjpegSrc ] && rm -rf $libjpegSrc
+[ -d $libjpegSrc ] || tar -xvf $libjpegPkg
+cd $libjpegSrc
+
+./configure \
+--prefix=$libjpegTgt
+
+make && make install

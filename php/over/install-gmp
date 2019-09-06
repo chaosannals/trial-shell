@@ -1,0 +1,21 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+gmpSrc='gmp-6.1.2'
+gmpPkg=$gmpSrc'.tar.lz'
+gmpUrl='https://gmplib.org/download/gmp/'$gmpPkg
+gmpTgt=$workspace'/gmp'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $gmpPkg ] || wget $gmpUrl
+#[ -d $gmpSrc ] && rm -rf $gmpSrc
+[ -d $gmpSrc ] || tar -xvf $gmpPkg
+cd $gmpSrc
+
+./configure \
+--prefix=$gmpTgt
+
+make && make install

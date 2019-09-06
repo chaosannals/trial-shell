@@ -1,0 +1,86 @@
+#!/bin/bash
+
+function build_openssl() {
+    local workspace=$1
+    local target=$2
+    local source='openssl-1.1.0h'
+    local package=$source'.tar.gz'
+    local url='https://www.openssl.org/source/'$package
+    
+    if [ -d $target ] ; then
+        echo 'openssl is exist.'
+        return 0
+    fi
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    ./config --prefix=$target
+
+    make && make install
+    
+    echo 'build openssl complete.'
+}
+
+function build_zlib() {
+    local workspace=$1
+    local target=$2
+    local source='zlib-1.2.11'
+    local package=$source'.tar.gz'
+    local url='https://www.zlib.net/'$package
+    
+    if [ -d $target ] ; then
+        echo 'zlib is exist.'
+        return 0
+    fi
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    ./configure --prefix=$target
+
+    make && make install
+    
+    echo 'build zlib complete.'
+}
+
+function build_git() {
+    local workspace=$1
+    local target=$2
+    local source='git-2.18.0'
+    local package=$source'.tar.gz'
+    local url='https://mirrors.edge.kernel.org/pub/software/scm/git/'$package
+    
+    local opensslDir=$workspace'/openssl'
+    local zlibDir=$workspace'/zlib'
+    
+    build_openssl $workspace $opensslDir
+    build_zlib $workspace $zlibDir
+    
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+    
+    make configure
+    
+    ./configure \
+    --with-openssl=$opensslDir \
+    --with-zlib=$zlibDir \
+    --prefix=$target
+    
+    make all && make install
+    
+    return 0
+}
+
+build_git '/app/sheen/git' '/app/git'

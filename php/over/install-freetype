@@ -1,0 +1,23 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+freetypeSrc='freetype-2.9.1'
+freetypePkg=$freetypeSrc'.tar.gz'
+freetypeUrl='https://download.savannah.gnu.org/releases/freetype/'$freetypePkg
+freetypeTgt=$workspace'/freetype'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $freetypePkg ] || wget $freetypeUrl
+#[ -d $freetypeSrc ] && rm -rf $freetypeSrc
+[ -d $freetypeSrc ] || tar -xvf $freetypePkg
+cd $freetypeSrc
+
+./configure --prefix=$freetypeTgt
+
+make && make install
+
+[ -d $freetypeTgt'/bin' ] || mkdir $freetypeTgt'/bin'
+cp $freetypeSrc'/builds/unix/freetype-config' $freetypeTgt'/bin/freetype-config'

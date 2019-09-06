@@ -1,0 +1,4 @@
+#!/bin/bash
+
+groupadd -g 1006 maria
+useradd -r -u 1006 -g maria -s /sbin/nologin -M maria

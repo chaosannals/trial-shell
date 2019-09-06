@@ -1,0 +1,12 @@
+#!/bin/bash
+
+target=$1
+user=$2
+group=$3
+
+[ -d $target ] || mkdir -p $target
+cd $target
+
+git init --bare
+
+chown -R $user:$group $target

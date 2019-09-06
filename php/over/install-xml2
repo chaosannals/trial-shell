@@ -1,0 +1,20 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+xml2Src='libxml2-2.9.8'
+xml2Pkg=$xml2Src'.tar.gz'
+xml2Url='ftp://xmlsoft.org/libxml2/'$xml2Pkg
+xml2Tgt=$workspace'/xml2'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $xml2Pkg ] || wget $xml2Url
+#[ -d $xml2Src ] && rm -rf $xml2Src
+[ -d $xml2Src ] || tar -xvf $xml2Pkg
+cd $xml2Src
+
+./configure --prefix=$xml2Tgt
+
+make && make install

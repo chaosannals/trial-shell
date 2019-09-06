@@ -1,0 +1,19 @@
+#!/bin/bash
+
+workspace='/app/sheen/library'
+
+libxml2Src='libxml2-2.9.8'
+libxml2Pkg=$libxml2Src'.tar.gz'
+libxml2Url='ftp://xmlsoft.org/libxml2/'$libxml2Pkg
+libxml2Tgt='/app/libxml2'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $libxml2Pkg ] || wget $libxml2Url
+[ -d $libxml2Src ] || tar -vxf $libxml2Pkg
+cd $libxml2Src
+
+./configure --prefix=$libxml2Tgt
+
+make && make install

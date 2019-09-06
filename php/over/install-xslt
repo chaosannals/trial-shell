@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# 最后安装了 libxslt-dev 包
+
+workspace='/app/sheen/php'
+
+libxsltSrc='libxslt-1.1.32'
+libxsltPkg=$libxsltSrc'.tar.gz'
+libxsltUrl='ftp://xmlsoft.org/libxslt/'$libxsltPkg
+libxsltTgt=$workspace'/libxslt'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $libxsltPkg ] || wget $libxsltUrl
+#[ -d $libxsltSrc ] && rm -rf $libxsltSrc
+[ -d $libxsltSrc ] || tar -xvf $libxsltPkg
+cd $libxsltSrc
+
+./configure \
+--prefix=$libxsltTgt \
+--with-libxml-prefix=$workspace'/xml2' \
+--with-libxml-include-prefix=$workspace'/xml2/include/libxml2' \
+--with-libxml-libs-prefix=$workspace'/xml2/lib'
+
+make && make install

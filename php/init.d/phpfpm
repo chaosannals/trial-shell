@@ -1,0 +1,100 @@
+#!/bin/bash
+# nginx 脚本
+
+directory='/app/php'
+executor=$directory'/sbin/php-fpm'
+pidfile=$directory'/run/php-fpm.pid'
+conffile=$directory'/etc/php-fpm.conf'
+options="--fpm-config $conffile --pid $pidfile"
+
+function wait_for_pid() {
+    local result=0
+    local action=$1
+    local timeout=$2
+    local pidfile=$3
+    
+    while test $result -lt $timeout ; do
+        case $action in
+            created)
+                if [ -f $pidfile ] ; then
+                    break
+                fi
+            ;;
+            removed)
+                if [ ! -f $pidfile ] ; then
+                    break
+                fi
+            ;;
+        esac
+        
+        echo -n '.'
+        try=`expr $try + 1`
+        sleep 1
+    done
+    
+    return $result
+}
+
+# 启动
+function start() {
+    local timeout=17
+
+    echo -n 'Starting php-fpm'
+    
+    $executor --daemonize $options
+    
+    if [ 0 != $? ] ; then
+        echo ' failed.'
+        exit 1
+    fi
+    
+    wait_for_pid created $timeout $pidfile
+    
+    if [ $? -ge $timeout ] ; then
+        echo ' failed(timeout).'
+        exit 1
+    else
+        echo ' done.'
+    fi
+}
+
+function stop() {
+    local timeout=17
+
+    echo -n 'Stoping php-fpm'
+    
+    if [ ! -r $pidfile ] ; then
+        echo 'warning: no pid file found.'
+        exit 1
+    fi
+    
+    kill -QUIT `cat $pidfile`
+    
+    wait_for_pid removed $timeout $pidfile
+    
+    if [ $? -ge $timeout ] ; then
+        echo ' failed(timeout).'
+        exit 1
+    else
+        echo ' done.'
+    fi
+}
+
+function restart() {
+    stop
+    start
+}
+
+function reload() {
+    exit 1
+}
+
+case $1 in
+    start|stop|restart|reload)
+        $1
+    ;;
+    *)
+        echo "Usage: $0 {start|stop|force-quit|restart|reload|status}"
+        exit 1
+    ;;
+esac

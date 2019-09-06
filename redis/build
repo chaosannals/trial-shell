@@ -1,0 +1,17 @@
+#!/bin/bash
+
+workspace='/app/sheen/redis'
+
+redisSrc='redis-4.0.9'
+redisPkg=$redisSrc'.tar.gz'
+redisUrl='http://download.redis.io/releases/'$redisPkg
+redisTgt='/app/redis'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $redisPkg ] || wget $redisUrl
+[ -d $redisSrc ] || tar -vxf $redisPkg
+cd $redisSrc
+
+make && make install PREFIX=$redisTgt

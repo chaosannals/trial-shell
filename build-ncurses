@@ -1,0 +1,40 @@
+#!/bin/bash
+
+function setup_ncurses() {
+    local target=$1
+    
+    echo $target'/lib' > '/etc/ld.so.conf.d/ncurses.conf'
+    ldconfig
+}
+
+function build_ncurses() {
+    local workspace=$1
+    local target=$2
+    local source='ncurses-6.1'
+    local package=$source'.tar.gz'
+    local url='http://ftp.gnu.org/gnu/ncurses/'$package
+    
+    if [ -d $target ] ; then
+        echo 'ncurses is exist.'
+        return 0
+    fi
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    ./configure --prefix=$target
+
+    make && make install
+    
+    if [ 0 -eq $? ] ; then
+        setup_ncurses $target
+    else
+        echo 'ncurses make failed.'
+    fi
+}
+
+build_ncurses `pwd` '/app/ncurses'

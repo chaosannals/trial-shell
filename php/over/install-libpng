@@ -1,0 +1,27 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+libpngVsn='1.6.34'
+libpngSrc='libpng-'$libpngVsn
+libpngPkg=$libpngSrc'.tar.gz'
+libpngUrl='https://jaist.dl.sourceforge.net/project/libpng/libpng16/'$libpngVsn'/'$libpngPkg
+libpngTgt=$workspace'/libpng'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $libpngPkg ] || wget $libpngUrl
+#[ -d $libpngSrc ] && rm -rf $libpngSrc
+[ -d $libpngSrc ] || tar -xvf $libpngPkg
+cd $libpngSrc
+
+#./configure \
+#--prefix=$libpngTgt \
+#--with-zlib-dir=$workspace'/zlib'
+
+makefileSrc='./scripts/makefile.linux'
+makefileTgt='./makefile'
+#cp -u -v $makefileSrc $makefileTgt
+
+make && make install

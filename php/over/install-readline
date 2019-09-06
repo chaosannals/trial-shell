@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# 最后安装了 libreadline 包
+
+workspace='/app/sheen/php'
+
+readlineSrc='readline-7.0'
+readlinePkg=$readlineSrc'.tar.gz'
+readlineUrl='ftp://ftp.cwru.edu/pub/bash/'$readlinePkg
+readlineTgt=$workspace'/readline'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $readlinePkg ] || wget $readlineUrl
+#[ -d $readlineSrc ] && rm -rf $readlineSrc
+[ -d $readlineSrc ] || tar -xvf $readlinePkg
+cd $readlineSrc
+
+./configure \
+--prefix=$readlineTgt
+
+make && make install
+
+cp -r $readlineTgt'/include/readline' $readlineTgt'/include'
