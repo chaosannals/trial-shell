@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# 遍历目录
+function analyze_suffix() {
+    for i in $(ls $1)
+    do
+        local p="$1/$i"
+        local bn=$(basename $i)
+        local suffix=${bn##*.}
+        if [ -f $p ]; then
+            if [ $bn != $suffix ]; then
+                echo "f $suffix $bn"
+            else
+                echo "f  $bn"
+            fi
+        else
+            echo "d $bn"
+        fi
+    done
+}
+
+analyze_suffix "/"

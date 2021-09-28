@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# 传入脚本 $0 参数可获得脚本所在目录
+function get_dir() {
+    echo $(cd -P $(dirname $1) && pwd)
+}
