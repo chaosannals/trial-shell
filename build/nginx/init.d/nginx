@@ -1,0 +1,82 @@
+#!/bin/bash
+# nginx 脚本
+
+# 检测是否连接网络
+[ "$NETWORKING" = "no" ] && exit 0
+
+# 设置变量
+name='nginx'
+directory='/app/'$name
+executor=$directory'/sbin/'$name
+pidfile=$directory'/logs/'$name'.pid'
+conffile=$directory'/conf/'$name'.conf'
+
+# 获取PID
+function identify() {
+	local pid
+	if [ -f $pidfile ] ; then
+		pid=`cat $pidfile`
+		echo $pid
+	fi
+}
+
+# 启动：载入配置文件
+function start() {
+	local pid=`identify`
+	[ -x $executor ] || exit 5
+	[ -f $conffile ] || exit 6
+	if [ $pid ] ; then
+		echo 'nginx already running'
+	else
+		echo "Starting $name: "
+		$executor -c $conffile
+	fi
+}
+
+# 关闭：杀死进程
+function stop() {
+	local pid=`identify`
+	if [ $pid ] ; then
+		echo "Stopping $name: "
+		kill -INT $pid
+	else
+		echo 'nginx not running'
+	fi
+}
+
+# 重启：尝试设置 关闭 再 启动
+function restart() {
+	configtest || return $?
+	stop
+	sleep 1
+	start
+}
+
+# 重载配置：尝试设置
+function reload() {
+	local pid=`identify`
+	if [ $id ] ; then
+		echo $"Reloading $name: "
+		kill -HUP $pid
+	else
+		echo 'nginx not reload'
+	fi
+}
+
+# 尝试载入设置
+function configtest() {
+	$executor -t -c $conffile
+}
+
+# 命令的调用
+case $1 in
+	start|stop|restart|reload|configtest)
+		$1
+	;;
+	status)
+		status $name
+	;;
+	*)
+		echo $"Usage $0 {start|stop|status|restart|reload|configtest}"
+		exit 2
+esac

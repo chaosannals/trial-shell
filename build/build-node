@@ -1,0 +1,20 @@
+#!/bin/bash
+
+workspace='/app/sheen/nodejs'
+
+nodejsVsn='v12.10.0'
+nodejsSrc='node-'$nodejsVsn
+nodejsPkg=$nodejsSrc'.tar.gz'
+nodejsUrl='https://nodejs.org/dist/'$nodejsVsn'/'$nodejsPkg
+nodejsTgt='/app/nodejs'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $nodejsPkg ] || wget $nodejsUrl
+[ -d $nodejsSrc ] || tar -xvf $nodejsPkg
+cd $nodejsSrc
+
+./configure --prefix=$nodejsTgt
+
+make && make install

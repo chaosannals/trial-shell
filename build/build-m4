@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function build_m4() {
+    local workspace=$1
+    local target=$2
+    local source='m4-1.4.18'
+    local package=$source'.tar.gz'
+    local url='http://ftp.gnu.org/gnu/m4/'$package
+    
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    #[ -d $source ] && rm -rf $source
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    ./configure --prefix=$target
+
+    make && make install
+}
+
+build_m4 `pwd` '/app/m4'

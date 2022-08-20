@@ -1,0 +1,64 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+phpSrc='php-7.2.6'
+phpPkg=$phpSrc'.tar.gz'
+phpUrl='http://php.net/distributions/'$phpPkg
+phpTgt='/app/php'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $phpPkg ] || wget $phpUrl
+[ -d $phpSrc ] || tar -vxf $phpPkg
+cd $phpSrc
+
+# 编译
+./configure \
+--with-openssl=$workspace'/openssl' \
+--with-libxml-dir=$workspace'/xml2' \
+--with-pcre-regex \
+--with-zlib=$workspace'/zlib' \
+--with-iconv \
+--with-bz2=$workspace'/bzip2' \
+--with-curl=$workspace'/curl' \
+--with-cdb \
+--with-gd \
+--with-gettext \
+--with-gmp=$workspace'/gmp' \
+--with-mhash \
+--with-libmbfl \
+--with-onig \
+--with-readline \
+--with-xsl \
+--with-pdo-mysql \
+--with-mysqli \
+--with-webp-dir=$workspace'/libwebp' \
+--with-jpeg-dir=$workspace'/libjpeg' \
+--with-png-dir=$workspace'/libpng' \
+--with-xpm-dir='/usr/lib/x86_64-linux-gnu/' \
+--with-freetype-dir=$workspace'/freetype' \
+--prefix=$phpTgt \
+--enable-zip \
+--enable-mysqlnd \
+--enable-mbstring \
+--enable-pdo \
+--enable-gd-native-ttf \
+--enable-session \
+--enable-sockets \
+--enable-shmop \
+--enable-simplexml \
+--enable-sysvmsg \
+--enable-sysvsem \
+--enable-sysvshm \
+--enable-wddx \
+--enable-calendar \
+--enable-soap \
+--enable-dom \
+--enable-exif \
+--enable-fpm \
+--with-fpm-user=sheen \
+--with-fpm-group=sheen
+
+make && make install

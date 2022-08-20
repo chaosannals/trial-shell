@@ -1,0 +1,99 @@
+#!/bin/bash
+
+function download_zlib_source() {
+    local version=$1
+    local source='zlib-'$version
+    local package=$source'.tar.gz'
+    local url='https://www.zlib.net/'$package
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+}
+
+function download_openssl_source() {
+    local version=$1
+    local source='openssl-'$version
+    local package=$source'.tar.gz'
+    local url='https://www.openssl.org/source/'$package
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+}
+
+function download_pcre_source() {
+    local version=$1
+    local source='pcre-'$version
+    local package=$source'.tar.gz'
+    local url='https://ftp.pcre.org/pub/pcre/'$package
+
+    [ -f $package ] || wget $url
+    #[ -d $source ] && rm -rf $source
+    [ -d $source ] || tar -xvf $package
+}
+
+function setup_nginx() {
+    local workspace=$1
+    local tempdir=$2
+    
+    [ -d $tempdir ] || mkdir -p $tempdir
+    cp $workspace'/init.d/nginx' '/etc/init.d/nginx'
+    chmod 755 '/etc/init.d/nginx'
+    update-rc.d nginx defaults
+}    
+
+function build_nginx() {
+    local workspace=$1
+    local user=$2
+    local group=$3
+    local target=$4
+    local version=$5
+    local source='nginx-'$version
+    local package=$source'.tar.gz'
+    local url=https://nginx.org/download/$package
+    local tempdir=$target'/temp'
+    local confdir=$target'/conf'
+    local zlibSrc=$workspace'/zlib-1.2.11'
+	local opensslSrc=$workspace'/openssl-1.1.0h'
+	local pcreSrc=$workspace'/pcre-8.42'
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+    
+    download_zlib_source '1.2.11'
+    download_openssl_source '1.1.0h'
+    download_pcre_source '8.42'
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    # 编译
+    ./configure \
+    --with-openssl=$opensslSrc \
+    --with-pcre=$pcreSrc \
+    --with-zlib=$zlibSrc \
+    --with-threads \
+    --with-http_stub_status_module \
+    --with-http_ssl_module \
+    --with-http_realip_module \
+    --with-http_sub_module \
+    --with-http_gzip_static_module \
+    --prefix=$target \
+    --http-client-body-temp-path=$tempdir'/client_body' \
+    --http-proxy-temp-path=$tempdir'/proxy' \
+    --http-fastcgi-temp-path=$tempdir'/fastcgi' \
+    --http-uwsgi-temp-path=$tempdir'/uwsgi' \
+    --http-scgi-temp-path=$tempdir'/scgi' \
+    --user=$user \
+    --group=$group
+
+    make && make install
+    
+    if [ 0 -eq $? ] ; then
+        setup_nginx $workspace $tempdir
+    fi
+
+    return 0
+}
+
+build_nginx '/app/sheen/nginx' 'sheen' 'sheen' '/app/nginx' '1.15.0'

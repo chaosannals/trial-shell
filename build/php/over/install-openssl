@@ -1,0 +1,20 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+opensslSrc='openssl-1.1.0h'
+opensslPkg=$opensslSrc'.tar.gz'
+opensslUrl='https://www.openssl.org/source/'$opensslPkg
+opensslTgt=$workspace'/openssl'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $opensslPkg ] || wget $opensslUrl
+#[ -d $opensslSrc ] && rm -rf $opensslSrc
+[ -d $opensslSrc ] || tar -xvf $opensslPkg
+cd $opensslSrc
+
+./config --prefix=$opensslTgt
+
+make && make install

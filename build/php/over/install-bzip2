@@ -1,0 +1,19 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+bzip2Vsn='1.0.6'
+bzip2Src='bzip2-'$bzip2Vsn
+bzip2Pkg=$bzip2Src'.tar.gz'
+bzip2Url='http://www.bzip.org/'$bzip2Vsn'/'$bzip2Pkg
+bzip2Tgt=$workspace'/bzip2'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $bzip2Pkg ] || wget $bzip2Url
+#[ -d $bzip2Src ] && rm -rf $bzip2Src
+[ -d $bzip2Src ] || tar -xvf $bzip2Pkg
+cd $bzip2Src
+
+make && make install PREFIX=$bzip2Tgt

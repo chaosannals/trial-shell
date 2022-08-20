@@ -1,0 +1,20 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+zlibSrc='zlib-1.2.11'
+zlibPkg=$zlibSrc'.tar.gz'
+zlibUrl='https://www.zlib.net/'$zlibPkg
+zlibTgt=$workspace'/zlib'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $zlibPkg ] || wget $zlibUrl
+#[ -d $zlibSrc ] && rm -rf $zlibSrc
+[ -d $zlibSrc ] || tar -xvf $zlibPkg
+cd $zlibSrc
+
+./configure --prefix=$zlibTgt
+
+make && make install

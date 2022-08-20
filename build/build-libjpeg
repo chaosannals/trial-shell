@@ -1,0 +1,26 @@
+#!/bin/bash
+
+function build_libjpeg() {
+    local workspace=$1
+    local target=$2
+    local source='jpeg-9c'
+    local package='jpegsrc.v9c.tar.gz'
+    local url='http://www.ijg.org/files/'$package
+
+    if [ -d $target ] ; then
+        echo 'libjpeg is exist.'
+        return 0
+    fi
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+
+    ./configure --prefix=$target
+    make && make install
+}
+
+build_libjpeg `pwd` '/app/libjpeg'

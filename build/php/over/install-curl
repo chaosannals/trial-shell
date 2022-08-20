@@ -1,0 +1,21 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+curlSrc='curl-7.60.0'
+curlPkg=$curlSrc'.tar.gz'
+curlUrl='https://curl.haxx.se/download/'$curlPkg
+curlTgt=$workspace'/curl'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $curlPkg ] || wget $curlUrl
+#[ -d $curlSrc ] && rm -rf $curlSrc
+[ -d $curlSrc ] || tar -xvf $curlPkg
+cd $curlSrc
+
+./configure \
+--prefix=$curlTgt
+
+make && make install

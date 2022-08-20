@@ -1,0 +1,20 @@
+#!/bin/bash
+
+workspace='/app/sheen/php'
+
+libwebpSrc='libwebp-1.0.0'
+libwebpPkg=$libwebpSrc'.tar.gz'
+libwebpUrl='http://downloads.webmproject.org/releases/webp/'$libwebpPkg
+libwebpTgt=$workspace'/libwebp'
+
+[ -d $workspace ] || mkdir $workspace
+cd $workspace
+
+[ -f $libwebpPkg ] || wget $libwebpUrl
+#[ -d $libwebpSrc ] && rm -rf $libwebpSrc
+[ -d $libwebpSrc ] || tar -xvf $libwebpPkg
+cd $libwebpSrc
+
+./configure --prefix=$libwebpTgt
+
+make && make install

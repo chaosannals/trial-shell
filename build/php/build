@@ -1,0 +1,320 @@
+#!/bin/bash
+
+function set_workspace() {
+    local workspace=$1
+    local target=$2
+    local source=$3
+    local package=$4
+    local url=$5
+    
+    if [ -d $target ] ; then
+        return 1
+    fi
+    
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+    
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -xvf $package
+    cd $source
+    return 0
+}
+
+function build_openssl() {
+    local workspace=$1
+    local target=$2
+    local source='openssl-1.1.0h'
+    local package=$source'.tar.gz'
+    local url='https://www.openssl.org/source/'$package
+    
+    set_workspace $workspace $target $source $package $url
+    
+    if [ 0 -eq $? ] ; then
+        ./config --prefix=$target
+        make && make install
+    fi
+}
+
+function build_zlib() {
+    local workspace=$1
+    local target=$2
+    local source='zlib-1.2.11'
+    local package=$source'.tar.gz'
+    local url='https://www.zlib.net/'$package
+    
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+    
+    echo 'build zlib complete.'
+}
+
+function build_bzip2() {
+    local workspace=$1
+    local target=$2
+    local version='1.0.6'
+    local source='bzip2-'$version
+    local package=$source'.tar.gz'
+    local url='http://www.bzip.org/'$version'/'$package
+    
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        make && make install PREFIX=$target
+    fi
+}
+
+function build_curl() {
+    local workspace=$1
+    local target=$2
+    local source='curl-7.60.0'
+    local package=$source'.tar.gz'
+    local url='https://curl.haxx.se/download/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+function build_freetype() {
+    local workspace=$1
+    local target=$2
+    local source='freetype-2.9.1'
+    local package=$source'.tar.gz'
+    local url='https://download.savannah.gnu.org/releases/freetype/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+
+        [ -d $target'/bin' ] || mkdir $target'/bin'
+        cp $source'/builds/unix/freetype-config' $target'/bin/freetype-config'
+    fi
+}
+
+# lzip 解压 .tar.lz
+function build_gmp() {
+    local workspace=$1
+    local target=$2
+    local source='gmp-6.1.2'
+    local package=$source'.tar.lz'
+    local url='https://gmplib.org/download/gmp/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+function build_libpng() {
+    local workspace=$1
+    local target=$2
+    local version='1.6.34'
+    local source='libpng-'$version
+    local package=$source'.tar.gz'
+    local url='https://jaist.dl.sourceforge.net/project/libpng/libpng16/'$version'/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        #./configure \
+        #--prefix=$target \
+        #--with-zlib-dir=$workspace'/zlib'
+
+        local makefileSrc='./scripts/makefile.linux'
+        local makefileTgt='./makefile'
+        cp -u -v $makefileSrc $makefileTgt
+
+        make && make install PREFIX=$target
+    fi
+}
+
+function build_libwebp() {
+    local workspace=$1
+    local target=$2
+    local source='libwebp-1.0.0'
+    local package=$source'.tar.gz'
+    local url='http://downloads.webmproject.org/releases/webp/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+function build_libxpm() {
+    local workspace=$1
+    local target=$2
+    local source='libXpm-3.5.12'
+    local package=$source'.tar.gz'
+    local url='https://www.x.org/releases/individual/lib/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+function build_readline() {
+    local workspace=$1
+    local target=$workspace'/readline'
+    local source='readline-7.0'
+    local package=$source'.tar.gz'
+    local url='ftp://ftp.cwru.edu/pub/bash/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+# python-dev
+function build_xml2() {
+    local workspace=$1
+    local target=$2
+    local source='libxml2-2.9.8'
+    local package=$source'.tar.gz'
+    local url='ftp://xmlsoft.org/libxml2/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+        make && make install
+    fi
+}
+
+# libxml2-dev
+function build_libxslt() {
+    local workspace=$1
+    local target=$2
+    local source='libxslt-1.1.32'
+    local package=$source'.tar.gz'
+    local url='ftp://xmlsoft.org/libxslt/'$package
+
+    set_workspace $workspace $target $source $package $url
+
+    if [ 0 -eq $? ] ; then
+        ./configure --prefix=$target
+
+        make && make install
+    fi
+}
+
+function build_php() {
+    local workspace=$1
+    local target=$2
+    local user=$3
+    local group=$4
+    local dependencies=$5
+    local source='php-7.2.7'
+    local package=$source'.tar.gz'
+    local url='http://php.net/distributions/'$package
+    
+    local opensslDir=$workspace'/openssl'
+    local zlibDir=$workspace'/zlib'
+    local bzip2Dir=$workspace'/bzip2'
+    local curlDir=$workspace'/curl'
+    local freetypeDir=$workspace'/freetype'
+    local gmpDir=$workspace'/gmp'
+    local libjpegDir=$workspace'/libjpeg'
+    local libpngDir=$workspace'/libpng'
+    local libwebpDir=$workspace'/libwebp'
+    local libxpmDir=$workspace'/libxpm'
+    local libxsltDir=$workspace'/libxslt'
+    local readlineDir=$workspace'/readline'
+    local xml2Dir=$workspace'/xml2'
+    
+    build_openssl $workspace $opensslDir
+    build_zlib $workspace $zlibDir
+    build_bzip2 $workspace $bzip2Dir
+    build_curl $workspace $curlDir
+    build_freetype $workspace $freetypeDir
+    build_gmp $workspace $gmpDir
+    build_libjpeg $workspace $libjpegDir
+    build_libpng $workspace $libpngDir
+    build_libwebp $workspace $libwebpDir
+    build_libxpm $workspace $libxpmDir
+    build_libxslt $workspace $libxsltDir
+    build_readline $workspace $readlineDir
+    build_xml2 $workspace $xml2Dir
+
+    [ -d $workspace ] || mkdir $workspace
+    cd $workspace
+
+    [ -f $package ] || wget $url
+    [ -d $source ] || tar -vxf $package
+    cd $source
+
+    # 编译
+    ./configure \
+    --with-openssl=$opensslDir \
+    --with-libxml-dir=$xml2Dir \
+    --with-pcre-regex \
+    --with-zlib=$zlibDir \
+    --with-iconv \
+    --with-bz2=$bzip2Dir \
+    --with-curl=$curlDir \
+    --with-cdb \
+    --with-gd \
+    --with-gettext \
+    --with-gmp=$gmpDir \
+    --with-mhash \
+    --with-libmbfl \
+    --with-onig \
+    --with-readline=$readlineDir \
+    --with-xsl=$libxsltDir \
+    --with-pdo-mysql \
+    --with-mysqli \
+    --with-webp-dir=$libwebpDir \
+    --with-jpeg-dir=${dependencies[libjpeg]} \
+    --with-png-dir=$libpngDir \
+    --with-xpm-dir=$libxpmDir \
+    --with-freetype-dir=$freetypeDir \
+    --prefix=$target \
+    --enable-zip \
+    --enable-mysqlnd \
+    --enable-mbstring \
+    --enable-pdo \
+    --enable-gd-native-ttf \
+    --enable-session \
+    --enable-sockets \
+    --enable-shmop \
+    --enable-simplexml \
+    --enable-sysvmsg \
+    --enable-sysvsem \
+    --enable-sysvshm \
+    --enable-wddx \
+    --enable-calendar \
+    --enable-soap \
+    --enable-dom \
+    --enable-exif \
+    --enable-fpm \
+    --with-fpm-user=$user \
+    --with-fpm-group=$group
+
+    make && make install
+}
+
+declare -A dependencies
+dependencies=(
+    [libjpeg]='/app/libjpeg'
+)
+
+build_php '/app/sheen/php' '/app/php' 'sheen' 'sheen' $dependencies
